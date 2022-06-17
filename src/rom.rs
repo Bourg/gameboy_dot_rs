@@ -95,6 +95,8 @@ mod tests {
     fn test_bank_1() {
         let mut rom = Rom::new();
 
+        assert_eq!(1, rom.bank_register_1);
+
         // Writing within the lower 5 bits is written as-is
         rom.write_byte(0x3CCC, 0b0011);
         assert_eq!(0b0011, rom.bank_register_1);
@@ -108,6 +110,45 @@ mod tests {
         // Writing 0 actually writes 1
         rom.write_byte(0x3FED, 0);
         assert_eq!(1, rom.bank_register_1);
+    }
+
+    #[test]
+    fn test_bank_2() {
+        let mut rom = Rom::new();
+
+        assert_eq!(0, rom.bank_register_2);
+
+        // Any 3-bit writes
+        for value in 0b11..=0 {
+            rom.write_byte(0x4000, value);
+            assert_eq!(value, rom.bank_register_2);
+        }
+
+        rom.write_byte(0x5FFF, 0b11111010);
+        assert_eq!(0b10, rom.bank_register_2);
+    }
+
+    #[test]
+    fn test_mode() {
+        let mut rom = Rom::new();
+
+        assert_eq!(false, rom.mode_register);
+
+        // Writing a 1 sets the flag
+        rom.write_byte(0x7FFF, 0b1);
+        assert_eq!(true, rom.mode_register);
+
+        // Writing a 3 unsets the flag beause the lowest bit is zero
+        rom.write_byte(0x6000, 0b10);
+        assert_eq!(false, rom.mode_register);
+
+        // All but lowest bit zeroed, still unset
+        rom.write_byte(0x6789, 0xFE);
+        assert_eq!(false, rom.mode_register);
+
+        // All bits set, flag set
+        rom.write_byte(0x6789, 0xFF);
+        assert_eq!(true, rom.mode_register);
     }
 
     /*
