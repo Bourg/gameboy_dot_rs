@@ -93,12 +93,31 @@ mod tests {
 
     #[test]
     fn test_bank_1() {
-        /*
-               MBC1 doesn’t allow the BANK1 register to contain zero (bit pattern 0b00000), so the initial value at reset
-        is 0b00001 and attempting to write 0b00000 will write 0b00001 instead. This makes it impossible to read
-        banks 0x00, 0x20, 0x40 and 0x60 from the 0x4000-0x7FFF memory area, because those bank numbers have
-        0b00000 in the lower bits. Due to the zero value adjustment, requesting any of these banks actually requests
-        the next bank (e.g. 0x21 instead of 0x20)
-                */
+        let mut rom = Rom::new();
+
+        // Writing within the lower 5 bits is written as-is
+        rom.write_byte(0x3CCC, 0b0011);
+        assert_eq!(0b0011, rom.bank_register_1);
+        rom.write_byte(0x2000, 0b11100);
+        assert_eq!(0b11100, rom.bank_register_1);
+
+        // Writing out of the lower 5 bits only keeps the lowest 5 bits
+        rom.write_byte(0x3210, 0b11110010);
+        assert_eq!(0b10010, rom.bank_register_1);
+
+        // Writing 0 actually writes 1
+        rom.write_byte(0x3FED, 0);
+        assert_eq!(1, rom.bank_register_1);
     }
+
+    /*
+     * TODO want to test this language from the GameBoy: Complete Technical Reference
+     * The implementation handles the writes correctly, but not sure what it means about the reads
+     *
+     * MBC1 doesn’t allow the BANK1 register to contain zero (bit pattern 0b00000), so the initial value at reset
+     * is 0b00001 and attempting to write 0b00000 will write 0b00001 instead. This makes it impossible to read
+     * banks 0x00, 0x20, 0x40 and 0x60 from the 0x4000-0x7FFF memory area, because those bank numbers have
+     * 0b00000 in the lower bits. Due to the zero value adjustment, requesting any of these banks actually requests
+     * the next bank (e.g. 0x21 instead of 0x20)
+     */
 }
