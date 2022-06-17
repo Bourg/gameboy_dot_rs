@@ -9,7 +9,13 @@ const BANK_2_REGISTER_ADDRESS_END: u16 = 0x5FFF;
 const MODE_REGISTER_ADDRESS_START: u16 = 0x6000;
 const MODE_REGISTER_ADDRESS_END: u16 = 0x7FFF;
 
+const LOW_ROM_BANK_ADDRESS_START: u16 = 0x0000;
+const LOW_ROM_BANK_ADDRESS_END: u16 = 0x3FFF;
+const HIGH_ROM_BANK_ADDRESS_START: u16 = 0x4000;
+const HIGH_ROM_BANK_ADDRESS_END: u16 = 0x7FFF;
+
 // Note: As implemented, this only supports the common memory bank controller MBC1
+// It does not support MBC1M (aka "multicart"), MBC2, MBC3, MBC30, MBC5, MBC6, MBC7, etc...
 pub struct Rom {
     ram_gate_register: bool,
     bank_register_1: u8,
@@ -27,10 +33,36 @@ impl Rom {
             mode_register: false,
         }
     }
+
+    // TODO how should this behave when the bank number would be greater than the number of banks on the chip?
+    // TODO this does not account for "multicart" cartridges
+    fn active_rom_bank_number(&self, address: u16) -> u8 {
+        match address {
+            LOW_ROM_BANK_ADDRESS_START..=LOW_ROM_BANK_ADDRESS_END => {
+                if !self.mode_register {
+                    0
+                } else {
+                    // Bank register 2 is 2-bit, so shifting 5 left will never overflow
+                    self.bank_register_2 << 5
+                }
+            }
+            HIGH_ROM_BANK_ADDRESS_START..=HIGH_ROM_BANK_ADDRESS_END => {
+                (self.bank_register_2 << 5) + self.bank_register_1
+            }
+            _ => {
+                panic!(
+                    "ROM is only readable in the range {:#06X}..={:#06X}, but a read was attempted at {:#06X}",
+                    LOW_ROM_BANK_ADDRESS_START,
+                    HIGH_ROM_BANK_ADDRESS_END,
+                    address);
+            }
+        }
+    }
 }
 
 impl MemoryMapped for Rom {
     fn read_byte(&self, _address: u16) -> u8 {
+        // TODO NEXT - READING ROM
         todo!("Unimplemented")
     }
 
@@ -151,14 +183,58 @@ mod tests {
         assert_eq!(true, rom.mode_register);
     }
 
-    /*
-     * TODO want to test this language from the GameBoy: Complete Technical Reference
-     * The implementation handles the writes correctly, but not sure what it means about the reads
-     *
-     * MBC1 doesn’t allow the BANK1 register to contain zero (bit pattern 0b00000), so the initial value at reset
-     * is 0b00001 and attempting to write 0b00000 will write 0b00001 instead. This makes it impossible to read
-     * banks 0x00, 0x20, 0x40 and 0x60 from the 0x4000-0x7FFF memory area, because those bank numbers have
-     * 0b00000 in the lower bits. Due to the zero value adjustment, requesting any of these banks actually requests
-     * the next bank (e.g. 0x21 instead of 0x20)
-     */
+    #[test]
+    fn test_active_rom_bank_number() {
+        let mut rom = Rom::new();
+
+        rom.write_byte(BANK_1_REGISTER_ADDRESS_START, 0b10010);
+        rom.write_byte(BANK_2_REGISTER_ADDRESS_START, 0b01);
+
+        // Active banks when the mode is 0
+        assert_eq!(0, rom.active_rom_bank_number(LOW_ROM_BANK_ADDRESS_START));
+        assert_eq!(
+            0b0110010,
+            rom.active_rom_bank_number(HIGH_ROM_BANK_ADDRESS_END)
+        );
+
+        // Active banks when the mode is 1
+        rom.write_byte(MODE_REGISTER_ADDRESS_START, 0x1);
+        assert_eq!(
+            0b0100000,
+            rom.active_rom_bank_number(LOW_ROM_BANK_ADDRESS_END)
+        );
+        assert_eq!(
+            0b0110010,
+            rom.active_rom_bank_number(HIGH_ROM_BANK_ADDRESS_END)
+        );
+
+        // Try some more values
+        rom.write_byte(BANK_1_REGISTER_ADDRESS_START, 0b00100);
+        rom.write_byte(BANK_2_REGISTER_ADDRESS_START, 0b10);
+
+        // Active banks when mode is 1 (left over from previous part of the test, not reset)
+        assert_eq!(0b1000000, rom.active_rom_bank_number(0x369C));
+        assert_eq!(68, rom.active_rom_bank_number(0x72A7));
+
+        // Active banks when mode is 0
+        rom.write_byte(MODE_REGISTER_ADDRESS_START, 0x0);
+        assert_eq!(0, rom.active_rom_bank_number(0x369C));
+        assert_eq!(68, rom.active_rom_bank_number(0x72A7));
+
+        // Test that it is actually impossible to get bank 0x20 in the 0x4000..=0x7999 address range
+        // Would need bank2 == 0b01, bank1 == 0b00000, but bank1 can never be zeroed
+        rom.write_byte(BANK_2_REGISTER_ADDRESS_START, 0b01);
+        rom.write_byte(BANK_1_REGISTER_ADDRESS_START, 0b00000);
+        // Even though we wrote in the bank number 0b0100000, we get 0b0100001 back
+        // This is because bank1 cannot be 0
+        assert_eq!(
+            0x21,
+            rom.active_rom_bank_number(HIGH_ROM_BANK_ADDRESS_START)
+        );
+
+        // However, you can get to bank 0x20 by addressing 0x0000..=0x3FFF in mode 1
+        rom.write_byte(MODE_REGISTER_ADDRESS_START, 0b1);
+        rom.write_byte(BANK_2_REGISTER_ADDRESS_START, 0b01);
+        assert_eq!(0x20, rom.active_rom_bank_number(0x1234));
+    }
 }
