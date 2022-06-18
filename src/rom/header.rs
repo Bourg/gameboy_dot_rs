@@ -1,9 +1,11 @@
 use super::cartridge_type::CartridgeType;
 use crate::rom::parse::{Parse, ParseResult};
 use std::ops::RangeInclusive;
+use crate::rom::constants;
 
 const HEADER_BYTES: usize = 0x50;
 
+const LOGO_ADDRESS_RANGE: RangeInclusive<usize> = 0x0004..=0x0033;
 const TITLE_ADDRESS_RANGE: RangeInclusive<usize> = 0x0034..=0x0043;
 const CARTRIDGE_TYPE_ADDRESS: usize = 0x0047;
 const ROM_BANKS_ADDRESS: usize = 0x0048;
@@ -11,6 +13,7 @@ const RAM_BANKS_ADDRESS: usize = 0x0049;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Header {
+    logo_valid: bool,
     title: String,
     cartridge_type: CartridgeType,
     rom_banks: usize,
@@ -26,6 +29,7 @@ impl Parse<&[u8]> for Header {
 
         // 0x0100..=0x0103 - Entrypoint, typically contains jump instruction to 0x0150
         // 0x0104..=0x0133 - Nintendo Logo TODO need to verify the presence of the logo bytes
+        let logo_valid = Header::check_logo_valid(&header[LOGO_ADDRESS_RANGE]);
         let title = Header::parse_title(&header[TITLE_ADDRESS_RANGE])?;
         // 0x0143 - CGB Flag TODO IMPORTANT check this flag, unclear what the possible values are
         // 0x0144..=0x0145 - New Licensee Code
@@ -34,7 +38,6 @@ impl Parse<&[u8]> for Header {
         let rom_banks = Header::parse_rom_banks(header[ROM_BANKS_ADDRESS])?;
         let ram_banks: usize = Header::parse_ram_banks(header[RAM_BANKS_ADDRESS])?;
 
-        // 0x0149 - RAM Size TODO IMPORTANT
         // 0x014A - Destination Code
         // 0x014B - Licensee Code
         // 0x014C - Mask ROM Version Number
@@ -43,6 +46,7 @@ impl Parse<&[u8]> for Header {
         // TODO the rest of the header
 
         Ok(Header {
+            logo_valid,
             title,
             cartridge_type,
             rom_banks,
@@ -63,6 +67,10 @@ impl Header {
         }
 
         Ok(())
+    }
+
+    fn check_logo_valid(logo_bytes: &[u8]) -> bool {
+        logo_bytes == constants::LOGO
     }
 
     fn parse_title(title_bytes: &[u8]) -> ParseResult<String> {
@@ -89,7 +97,7 @@ impl Header {
             0x03 => Ok(4),
             0x04 => Ok(16),
             0x05 => Ok(8),
-            _ => Err(format!("invalid ram banks code {:#04X}", code))
+            _ => Err(format!("invalid ram banks code {:#04X}", code)),
         }
     }
 }
@@ -115,6 +123,7 @@ mod tests {
 
         assert_eq!(
             Header {
+                logo_valid: false,
                 title: "POKEMON RED".to_string(),
                 cartridge_type: CartridgeType::Mbc3 {
                     battery: true,
