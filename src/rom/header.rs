@@ -16,20 +16,20 @@ const GLOBAL_CHECKSUM_ADDRESS_RANGE: RangeInclusive<usize> = 0x004E..=0x004F;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Header {
-    title: String,
-    cartridge_type: CartridgeType,
-    rom_banks: usize,
-    ram_banks: usize,
-    version: u8,
+    pub title: String,
+    pub cartridge_type: CartridgeType,
+    pub rom_banks: usize,
+    pub ram_banks: usize,
+    pub version: u8,
 
-    validation: Validation,
+    pub validation: Validation,
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Validation {
-    logo: bool,
-    header_checksum: Checksum<u8>,
-    global_checksum: u16,
+    pub logo: bool,
+    pub header_checksum: Checksum<u8>,
+    pub global_checksum: u16,
 }
 
 #[derive(Debug, Eq, PartialEq)]
