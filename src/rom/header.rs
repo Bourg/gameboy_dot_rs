@@ -1,7 +1,7 @@
 use super::cartridge_type::CartridgeType;
+use crate::rom::constants;
 use crate::rom::parse::{Parse, ParseResult};
 use std::ops::RangeInclusive;
-use crate::rom::constants;
 
 const HEADER_BYTES: usize = 0x50;
 
@@ -10,14 +10,32 @@ const TITLE_ADDRESS_RANGE: RangeInclusive<usize> = 0x0034..=0x0043;
 const CARTRIDGE_TYPE_ADDRESS: usize = 0x0047;
 const ROM_BANKS_ADDRESS: usize = 0x0048;
 const RAM_BANKS_ADDRESS: usize = 0x0049;
+const VERSION_ADDRESS: usize = 0x004C;
+const HEADER_CHECKSUM_ADDRESS: usize = 0x004D;
+const GLOBAL_CHECKSUM_ADDRESS_RANGE: RangeInclusive<usize> = 0x004E..=0x004F;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Header {
-    logo_valid: bool,
     title: String,
     cartridge_type: CartridgeType,
     rom_banks: usize,
     ram_banks: usize,
+    version: u8,
+
+    validation: Validation,
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub struct Validation {
+    logo: bool,
+    header_checksum: Checksum<u8>,
+    global_checksum: u16,
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum Checksum<T> {
+    Ok(T),
+    Err { actual: T, expected: T },
 }
 
 impl Parse<&[u8]> for Header {
@@ -27,8 +45,6 @@ impl Parse<&[u8]> for Header {
     fn parse(header: &[u8]) -> ParseResult<Header> {
         Header::precondition_len(header)?;
 
-        // 0x0100..=0x0103 - Entrypoint, typically contains jump instruction to 0x0150
-        // 0x0104..=0x0133 - Nintendo Logo TODO need to verify the presence of the logo bytes
         let logo_valid = Header::check_logo_valid(&header[LOGO_ADDRESS_RANGE]);
         let title = Header::parse_title(&header[TITLE_ADDRESS_RANGE])?;
         // 0x0143 - CGB Flag TODO IMPORTANT check this flag, unclear what the possible values are
@@ -40,17 +56,25 @@ impl Parse<&[u8]> for Header {
 
         // 0x014A - Destination Code
         // 0x014B - Licensee Code
-        // 0x014C - Mask ROM Version Number
-        // 0x014D - Header Checksum TODO important verify the checksum
-        // 0x014E..=0x014F - Global Checksum
-        // TODO the rest of the header
+        let version = header[VERSION_ADDRESS];
+        let header_checksum = Header::check_header_checksum(header);
+        let global_checksum = u16::from_le_bytes([
+            header[*GLOBAL_CHECKSUM_ADDRESS_RANGE.start()],
+            header[*GLOBAL_CHECKSUM_ADDRESS_RANGE.end()],
+        ]);
 
         Ok(Header {
-            logo_valid,
             title,
             cartridge_type,
             rom_banks,
             ram_banks,
+            version,
+
+            validation: Validation {
+                logo: logo_valid,
+                header_checksum,
+                global_checksum,
+            },
         })
     }
 }
@@ -100,12 +124,31 @@ impl Header {
             _ => Err(format!("invalid ram banks code {:#04X}", code)),
         }
     }
+
+    fn check_header_checksum(header: &[u8]) -> Checksum<u8> {
+        let expected_checksum = header[HEADER_CHECKSUM_ADDRESS];
+
+        let mut actual_checksum: u8 = 0;
+        for byte in &header[*TITLE_ADDRESS_RANGE.start()..=VERSION_ADDRESS] {
+            actual_checksum = actual_checksum.wrapping_sub(*byte).wrapping_sub(1);
+        }
+
+        if expected_checksum == actual_checksum {
+            Checksum::Ok(actual_checksum)
+        } else {
+            Checksum::Err {
+                actual: actual_checksum,
+                expected: expected_checksum,
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::super::cartridge_type::CartridgeType;
     use super::*;
+    use crate::rom::header::Checksum::Err;
 
     #[test]
     fn test_handcrafted_header() {
@@ -123,7 +166,6 @@ mod tests {
 
         assert_eq!(
             Header {
-                logo_valid: false,
                 title: "POKEMON RED".to_string(),
                 cartridge_type: CartridgeType::Mbc3 {
                     battery: true,
@@ -132,6 +174,16 @@ mod tests {
                 },
                 rom_banks: 64,
                 ram_banks: 4,
+                version: 0,
+
+                validation: Validation {
+                    logo: false,
+                    header_checksum: Err {
+                        actual: 184,
+                        expected: 0
+                    },
+                    global_checksum: 0
+                },
             },
             header
         );
