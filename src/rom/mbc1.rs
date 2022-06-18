@@ -16,17 +16,17 @@ const HIGH_ROM_BANK_ADDRESS_END: u16 = 0x7FFF;
 
 // Note: As implemented, this only supports the common memory bank controller MBC1
 // It does not support MBC1M (aka "multicart"), MBC2, MBC3, MBC30, MBC5, MBC6, MBC7, etc...
-pub struct Rom {
+pub struct Mbc1 {
     ram_gate_register: bool,
     bank_register_1: u8,
     bank_register_2: u8,
     mode_register: bool,
 }
 
-impl Rom {
+impl Mbc1 {
     // TODO actually loading a rom should parse the header
-    fn new() -> Rom {
-        Rom {
+    fn new() -> Mbc1 {
+        Mbc1 {
             ram_gate_register: false,
             bank_register_1: 1,
             bank_register_2: 0,
@@ -60,9 +60,10 @@ impl Rom {
     }
 }
 
-impl MemoryMapped for Rom {
+impl MemoryMapped for Mbc1 {
     fn read_byte(&self, _address: u16) -> u8 {
         // TODO NEXT - READING ROM
+        // ROM header first
         todo!("Unimplemented")
     }
 
@@ -103,7 +104,7 @@ mod tests {
 
     #[test]
     fn test_ramg() {
-        let mut rom = Rom::new();
+        let mut rom = Mbc1::new();
 
         // Register should start off
         assert_eq!(false, rom.ram_gate_register);
@@ -125,7 +126,7 @@ mod tests {
 
     #[test]
     fn test_bank_1() {
-        let mut rom = Rom::new();
+        let mut rom = Mbc1::new();
 
         assert_eq!(1, rom.bank_register_1);
 
@@ -146,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_bank_2() {
-        let mut rom = Rom::new();
+        let mut rom = Mbc1::new();
 
         assert_eq!(0, rom.bank_register_2);
 
@@ -162,7 +163,7 @@ mod tests {
 
     #[test]
     fn test_mode() {
-        let mut rom = Rom::new();
+        let mut rom = Mbc1::new();
 
         assert_eq!(false, rom.mode_register);
 
@@ -185,7 +186,7 @@ mod tests {
 
     #[test]
     fn test_active_rom_bank_number() {
-        let mut rom = Rom::new();
+        let mut rom = Mbc1::new();
 
         rom.write_byte(BANK_1_REGISTER_ADDRESS_START, 0b10010);
         rom.write_byte(BANK_2_REGISTER_ADDRESS_START, 0b01);
