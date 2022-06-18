@@ -5,7 +5,7 @@ use std::io::Read;
 use std::{error, fs, io};
 
 fn main() -> Result<(), Box<dyn error::Error>> {
-    let mut cli: Cli = Cli::parse();
+    let cli: Cli = Cli::parse();
 
     match cli.commands {
         Commands::Header { mut file } => header_command(&mut file),
