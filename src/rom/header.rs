@@ -7,12 +7,14 @@ const HEADER_BYTES: usize = 0x50;
 const TITLE_ADDRESS_RANGE: RangeInclusive<usize> = 0x0034..=0x0043;
 const CARTRIDGE_TYPE_ADDRESS: usize = 0x0047;
 const ROM_BANKS_ADDRESS: usize = 0x0048;
+const RAM_BANKS_ADDRESS: usize = 0x0049;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Header {
     title: String,
     cartridge_type: CartridgeType,
     rom_banks: usize,
+    ram_banks: usize,
 }
 
 impl Parse<&[u8]> for Header {
@@ -30,6 +32,7 @@ impl Parse<&[u8]> for Header {
         // 0x0146 - SGB Flag
         let cartridge_type = CartridgeType::parse(header[CARTRIDGE_TYPE_ADDRESS])?;
         let rom_banks = Header::parse_rom_banks(header[ROM_BANKS_ADDRESS])?;
+        let ram_banks: usize = Header::parse_ram_banks(header[RAM_BANKS_ADDRESS])?;
 
         // 0x0149 - RAM Size TODO IMPORTANT
         // 0x014A - Destination Code
@@ -43,6 +46,7 @@ impl Parse<&[u8]> for Header {
             title,
             cartridge_type,
             rom_banks,
+            ram_banks,
         })
     }
 }
@@ -74,7 +78,18 @@ impl Header {
         if code <= 0x08 {
             Ok(2 << code)
         } else {
-            Err(format!("invalid rom size code {:#04X}", code))
+            Err(format!("invalid rom banks code {:#04X}", code))
+        }
+    }
+
+    fn parse_ram_banks(code: u8) -> ParseResult<usize> {
+        match code {
+            0x00 => Ok(0),
+            0x02 => Ok(1),
+            0x03 => Ok(4),
+            0x04 => Ok(16),
+            0x05 => Ok(8),
+            _ => Err(format!("invalid ram banks code {:#04X}", code))
         }
     }
 }
@@ -94,6 +109,7 @@ mod tests {
         &header[TITLE_ADDRESS_RANGE].copy_from_slice(title.as_bytes());
         header[CARTRIDGE_TYPE_ADDRESS] = 0x13;
         header[ROM_BANKS_ADDRESS] = 0x05;
+        header[RAM_BANKS_ADDRESS] = 0x03;
 
         let header = Header::parse(&header[..]).unwrap();
 
@@ -105,7 +121,8 @@ mod tests {
                     ram: true,
                     timer: false
                 },
-                rom_banks: 64
+                rom_banks: 64,
+                ram_banks: 4,
             },
             header
         );
@@ -124,5 +141,13 @@ mod tests {
 
         let banks = Header::parse_rom_banks(0xFF);
         assert!(banks.is_err());
+    }
+
+    #[test]
+    fn test_ram_banks() {
+        assert_eq!(0, Header::parse_ram_banks(0x00).unwrap());
+        assert!(Header::parse_ram_banks(0x01).is_err());
+        assert_eq!(8, Header::parse_ram_banks(0x05).unwrap());
+        assert!(Header::parse_ram_banks(0x06).is_err());
     }
 }
