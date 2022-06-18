@@ -104,32 +104,32 @@ impl Parse for CartridgeType {
             0x19 => Ok(CartridgeType::Mbc5 {
                 battery: false,
                 ram: false,
-                rumble: false
+                rumble: false,
             }),
             0x1A => Ok(CartridgeType::Mbc5 {
                 battery: false,
                 ram: true,
-                rumble: false
+                rumble: false,
             }),
             0x1B => Ok(CartridgeType::Mbc5 {
                 battery: true,
                 ram: true,
-                rumble: false
+                rumble: false,
             }),
             0x1C => Ok(CartridgeType::Mbc5 {
                 battery: false,
                 ram: false,
-                rumble: true
+                rumble: true,
             }),
             0x1D => Ok(CartridgeType::Mbc5 {
                 battery: false,
                 ram: true,
-                rumble: true
+                rumble: true,
             }),
             0x1E => Ok(CartridgeType::Mbc5 {
                 battery: true,
                 ram: true,
-                rumble: true
+                rumble: true,
             }),
             0x20 => Ok(CartridgeType::Mbc6),
             0x22 => Ok(CartridgeType::Mbc7),
@@ -137,18 +137,15 @@ impl Parse for CartridgeType {
             0xFD => Ok(CartridgeType::BandaiTama5),
             0xFE => Ok(CartridgeType::HuC3),
             0xFF => Ok(CartridgeType::HuC1),
-            _ => Err(format!(
-                "unrecognized cartridge type code {:#04X}",
-                code
-            )),
+            _ => Err(format!("unrecognized cartridge type code {:#04X}", code)),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
     use super::*;
+    use std::collections::HashSet;
 
     macro_rules! test_parse {
         ($test_name: ident, $code: expr, $expected: expr) => {
@@ -157,13 +154,34 @@ mod tests {
                 let actual = CartridgeType::parse($code).unwrap();
                 assert_eq!($expected, actual);
             }
-        }
+        };
     }
 
     // Some extra carefulness with Mbc1 since that's what is actually supported to play
-    test_parse!(test_mbc1_basic, 0x01, CartridgeType::Mbc1{ battery: false, ram: false});
-    test_parse!(test_mbc1_ram, 0x02, CartridgeType::Mbc1{ battery: false, ram: true});
-    test_parse!(test_mbc1_battery_ram, 0x03, CartridgeType::Mbc1{ battery: true, ram: true});
+    test_parse!(
+        test_mbc1_basic,
+        0x01,
+        CartridgeType::Mbc1 {
+            battery: false,
+            ram: false
+        }
+    );
+    test_parse!(
+        test_mbc1_ram,
+        0x02,
+        CartridgeType::Mbc1 {
+            battery: false,
+            ram: true
+        }
+    );
+    test_parse!(
+        test_mbc1_battery_ram,
+        0x03,
+        CartridgeType::Mbc1 {
+            battery: true,
+            ram: true
+        }
+    );
 
     #[test]
     fn test_uniqueness() {

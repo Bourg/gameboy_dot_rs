@@ -37,7 +37,10 @@ impl Parse<&[u8]> for Header {
         // 0x014E..=0x014F - Global Checksum
         // TODO the rest of the header
 
-        Ok(Header { title, cartridge_type })
+        Ok(Header {
+            title,
+            cartridge_type,
+        })
     }
 }
 
@@ -49,7 +52,7 @@ impl Header {
                 header.len(),
                 HEADER_BYTES
             )
-                .to_string());
+            .to_string());
         }
 
         Ok(())
