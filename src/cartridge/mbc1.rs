@@ -1,6 +1,6 @@
+use crate::cartridge::header::Header;
+use crate::cartridge::parse::{Parse, ParseResult};
 use crate::memory::MemoryMapped;
-use crate::rom::header::Header;
-use crate::rom::parse::{Parse, ParseResult};
 use std::ops::RangeInclusive;
 
 const RAM_GATE_REGISTER_ADDRESS_START: u16 = 0x0000;
@@ -20,7 +20,6 @@ const HIGH_ROM_BANK_ADDRESS_END: u16 = 0x7FFF;
 const HEADER_ADDRESS_RANGE: RangeInclusive<usize> = 0x100..=0x150;
 
 const ROM_BANK_SIZE_BYTES: usize = 0x4000;
-const RAM_BANK_SIZE_BYTES: usize = 0x2000;
 
 // Note: As implemented, this only supports the common memory bank controller MBC1
 // It does not support MBC1M (aka "multicart"), MBC2, MBC3, MBC30, MBC5, MBC6, MBC7, etc...
@@ -32,7 +31,7 @@ pub struct Mbc1 {
     mode_register: bool,
 
     rom: Vec<u8>,
-    ram: Vec<u8>,
+    // TODO ram
 }
 
 impl Mbc1 {
@@ -45,7 +44,6 @@ impl Mbc1 {
 
             // For default, just enough ROM and RAM to to banking
             rom: Mbc1::create_rom(4),
-            ram: Mbc1::create_ram(2),
         }
     }
 
@@ -60,16 +58,11 @@ impl Mbc1 {
             mode_register: false,
 
             rom: Mbc1::create_rom(header.rom_banks),
-            ram: Mbc1::create_ram(header.ram_banks),
         })
     }
 
     fn create_rom(banks: usize) -> Vec<u8> {
         vec![0; banks * ROM_BANK_SIZE_BYTES]
-    }
-
-    fn create_ram(banks: usize) -> Vec<u8> {
-        vec![0; banks * RAM_BANK_SIZE_BYTES]
     }
 
     /// Translate a 16-bit GameBoy address to a usize indexing the full MBC1 ROM vector

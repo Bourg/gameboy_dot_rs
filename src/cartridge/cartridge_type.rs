@@ -1,4 +1,4 @@
-use crate::rom::parse::{Parse, ParseResult};
+use crate::cartridge::parse::{Parse, ParseResult};
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub enum CartridgeType {

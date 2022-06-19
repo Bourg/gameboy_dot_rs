@@ -1,6 +1,6 @@
 use super::cartridge_type::CartridgeType;
-use crate::rom::constants;
-use crate::rom::parse::{Parse, ParseResult};
+use crate::cartridge::constants;
+use crate::cartridge::parse::{Parse, ParseResult};
 use std::ops::RangeInclusive;
 
 const HEADER_BYTES: usize = 0x50;
@@ -150,7 +150,7 @@ impl Header {
 mod tests {
     use super::super::cartridge_type::CartridgeType;
     use super::*;
-    use crate::rom::header::Checksum::Err;
+    use crate::cartridge::header::Checksum::Err;
 
     #[test]
     fn test_handcrafted_header() {

@@ -1,9 +1,9 @@
 use std::fs;
 use std::io::Read;
 use std::path::PathBuf;
-use gameboy_dot_rs::rom::cartridge_type::CartridgeType;
-use gameboy_dot_rs::rom::header::{Checksum, Header, Validation};
-use gameboy_dot_rs::rom::parse::Parse;
+use gameboy_dot_rs::cartridge::cartridge_type::CartridgeType;
+use gameboy_dot_rs::cartridge::header::{Checksum, Header, Validation};
+use gameboy_dot_rs::cartridge::parse::Parse;
 
 #[test]
 fn test_pokemon_red_header() {

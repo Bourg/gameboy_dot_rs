@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
-use gameboy_dot_rs::rom::header;
-use gameboy_dot_rs::rom::parse::Parse;
+use gameboy_dot_rs::cartridge::header;
+use gameboy_dot_rs::cartridge::parse::Parse;
 use std::io::Read;
 use std::{error, fs, io};
 
