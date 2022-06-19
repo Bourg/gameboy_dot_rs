@@ -42,7 +42,7 @@ impl Mbc1 {
             bank_register_2: 0,
             mode_register: false,
 
-            // For default, just enough ROM and RAM to to banking
+            // TODO what is "standard"?
             rom: Mbc1::create_rom(4),
         }
     }
