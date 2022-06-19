@@ -42,20 +42,22 @@ impl Parse<&[u8]> for Header {
     /// Parse the header from its raw bytes.
     /// The header appears starting at 0x100 in a cartridge's memory.
     /// The slice given here should be just the header, so roughly &rom[100..150]
+    ///
+    /// Currently, this does not parse:
+    /// 0x0143 - CGB Flag
+    /// 0x0144..=0x0145 - New Licensee Code
+    /// 0x0146 - SGB Flag
+    /// 0x014A - Destination Code
+    /// 0x014B - Licensee Code
     fn parse(header: &[u8]) -> ParseResult<Header> {
         Header::precondition_len(header)?;
 
         let logo_valid = Header::check_logo_valid(&header[LOGO_ADDRESS_RANGE]);
         let title = Header::parse_title(&header[TITLE_ADDRESS_RANGE])?;
-        // 0x0143 - CGB Flag TODO IMPORTANT check this flag, unclear what the possible values are
-        // 0x0144..=0x0145 - New Licensee Code
-        // 0x0146 - SGB Flag
         let cartridge_type = CartridgeType::parse(header[CARTRIDGE_TYPE_ADDRESS])?;
         let rom_banks = Header::parse_rom_banks(header[ROM_BANKS_ADDRESS])?;
         let ram_banks: usize = Header::parse_ram_banks(header[RAM_BANKS_ADDRESS])?;
 
-        // 0x014A - Destination Code
-        // 0x014B - Licensee Code
         let version = header[VERSION_ADDRESS];
         let header_checksum = Header::check_header_checksum(header);
         let global_checksum = u16::from_le_bytes([
@@ -157,10 +159,11 @@ mod tests {
         let title = "POKEMON RED\0\0\0\0\0";
         assert_eq!(16, title.len());
 
-        &header[TITLE_ADDRESS_RANGE].copy_from_slice(title.as_bytes());
+        header[TITLE_ADDRESS_RANGE].copy_from_slice(title.as_bytes());
         header[CARTRIDGE_TYPE_ADDRESS] = 0x13;
         header[ROM_BANKS_ADDRESS] = 0x05;
         header[RAM_BANKS_ADDRESS] = 0x03;
+        header[GLOBAL_CHECKSUM_ADDRESS_RANGE].copy_from_slice(&[0x12, 0x34]);
 
         let header = Header::parse(&header[..]).unwrap();
 
@@ -182,7 +185,7 @@ mod tests {
                         actual: 184,
                         expected: 0
                     },
-                    global_checksum: 0
+                    global_checksum: 0x3412,
                 },
             },
             header

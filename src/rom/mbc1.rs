@@ -1,4 +1,7 @@
 use crate::memory::MemoryMapped;
+use crate::rom::header::Header;
+use crate::rom::parse::{Parse, ParseResult};
+use std::ops::RangeInclusive;
 
 const RAM_GATE_REGISTER_ADDRESS_START: u16 = 0x0000;
 const RAM_GATE_REGISTER_ADDRESS_END: u16 = 0x1FFF;
@@ -14,24 +17,68 @@ const LOW_ROM_BANK_ADDRESS_END: u16 = 0x3FFF;
 const HIGH_ROM_BANK_ADDRESS_START: u16 = 0x4000;
 const HIGH_ROM_BANK_ADDRESS_END: u16 = 0x7FFF;
 
+const HEADER_ADDRESS_RANGE: RangeInclusive<usize> = 0x100..=0x150;
+
+const ROM_BANK_SIZE_BYTES: usize = 0x4000;
+const RAM_BANK_SIZE_BYTES: usize = 0x2000;
+
 // Note: As implemented, this only supports the common memory bank controller MBC1
 // It does not support MBC1M (aka "multicart"), MBC2, MBC3, MBC30, MBC5, MBC6, MBC7, etc...
+// TODO use constant type parameters to allocate the ram and rom as arrays intead of vectors?
 pub struct Mbc1 {
     ram_gate_register: bool,
     bank_register_1: u8,
     bank_register_2: u8,
     mode_register: bool,
+
+    rom: Vec<u8>,
+    ram: Vec<u8>,
 }
 
 impl Mbc1 {
-    // TODO actually loading a rom should parse the header
-    fn new() -> Mbc1 {
+    pub fn new() -> Mbc1 {
         Mbc1 {
             ram_gate_register: false,
             bank_register_1: 1,
             bank_register_2: 0,
             mode_register: false,
+
+            // For default, just enough ROM and RAM to to banking
+            rom: Mbc1::create_rom(4),
+            ram: Mbc1::create_ram(2),
         }
+    }
+
+    pub fn from_bytes(rom_bytes: &[u8]) -> ParseResult<Mbc1> {
+        let header = Header::parse(&rom_bytes[HEADER_ADDRESS_RANGE])?;
+
+        // TODO reduce duplication with other constructor
+        Ok(Mbc1 {
+            ram_gate_register: false,
+            bank_register_1: 1,
+            bank_register_2: 0,
+            mode_register: false,
+
+            rom: Mbc1::create_rom(header.rom_banks),
+            ram: Mbc1::create_ram(header.ram_banks),
+        })
+    }
+
+    fn create_rom(banks: usize) -> Vec<u8> {
+        vec![0; banks * ROM_BANK_SIZE_BYTES]
+    }
+
+    fn create_ram(banks: usize) -> Vec<u8> {
+        vec![0; banks * RAM_BANK_SIZE_BYTES]
+    }
+
+    /// Translate a 16-bit GameBoy address to a usize indexing the full MBC1 ROM vector
+    /// This takes the current bank registers into account
+    fn rom_address_to_rom_index(&self, address: u16) -> usize {
+        let address_within_bank = (address as usize) % ROM_BANK_SIZE_BYTES;
+        let bank_offset = self.active_rom_bank_number(address) as usize * ROM_BANK_SIZE_BYTES;
+
+        address_within_bank + bank_offset
     }
 
     // TODO how should this behave when the bank number would be greater than the number of banks on the chip?
@@ -61,10 +108,13 @@ impl Mbc1 {
 }
 
 impl MemoryMapped for Mbc1 {
-    fn read_byte(&self, _address: u16) -> u8 {
-        // TODO NEXT - READING ROM
-        // ROM header first
-        todo!("Unimplemented")
+    fn read_byte(&self, address: u16) -> u8 {
+        match address {
+            LOW_ROM_BANK_ADDRESS_START..=HIGH_ROM_BANK_ADDRESS_END => {
+                self.rom[self.rom_address_to_rom_index(address)]
+            }
+            _ => todo!("RAM reads not implemented"),
+        }
     }
 
     fn write_byte(&mut self, address: u16, value: u8) {
@@ -237,5 +287,16 @@ mod tests {
         rom.write_byte(MODE_REGISTER_ADDRESS_START, 0b1);
         rom.write_byte(BANK_2_REGISTER_ADDRESS_START, 0b01);
         assert_eq!(0x20, rom.active_rom_bank_number(0x1234));
+    }
+
+    #[test]
+    fn test_rom_addressing() {
+        let mut rom = Mbc1::new();
+        let address = 0x72A7;
+
+        rom.write_byte(BANK_1_REGISTER_ADDRESS_START, 0b00100);
+        rom.write_byte(BANK_2_REGISTER_ADDRESS_START, 0b10);
+        assert_eq!(0x44, rom.active_rom_bank_number(address));
+        assert_eq!(0x1132A7, rom.rom_address_to_rom_index(address));
     }
 }
