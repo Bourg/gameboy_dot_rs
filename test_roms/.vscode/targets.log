@@ -1,0 +1,335 @@
+
+# Make data base, printed on Wed Jun 22 18:27:24 2022
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# automatic
+?F = $(notdir $?)
+# makefile (from `Makefile', line 9)
+RGBASM_FLAGS := -L
+# environment
+VSCODE_LOG_NATIVE = false
+# environment
+NVM_INC = /Users/austinbourgerie/.nvm/versions/node/v17.3.1/include/node
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# automatic
+@F = $(notdir $@)
+# makefile
+CURDIR := /Users/austinbourgerie/Documents/learn_rust/gameboy_dot_rs/test_roms
+# makefile
+SHELL = /bin/sh
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# environment
+_ = /usr/bin/make
+# makefile (from `Makefile', line 1)
+MAKEFILE_LIST :=  Makefile
+# makefile (from `Makefile', line 2)
+OBJ_DIR := build
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+__CFBundleIdentifier = com.microsoft.VSCode
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /var/folders/84/5vgb6rtd14qdn2b_klkrc29c0000gn/T/vscode-ipc-229e8b59-db81-4134-a1a5-a1ff8b298015.sock
+# environment
+VSCODE_CWD = /
+# makefile (from `Makefile', line 6)
+OBJ_FILES := build/hello-world-2.o build/hello-world.o
+# environment
+PATH = /Users/austinbourgerie/.nvm/versions/node/v17.3.1/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Users/austinbourgerie/.cargo/bin
+# environment
+NVM_BIN = /Users/austinbourgerie/.nvm/versions/node/v17.3.1/bin
+# environment
+VSCODE_LOG_STACK = false
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# default
+.FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
+# environment
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.AeYdFzLwqI/Listeners
+# automatic
+%F = $(notdir $%)
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+PWD = /Users/austinbourgerie/Documents/learn_rust/gameboy_dot_rs/test_roms
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = undefined
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+HOME = /Users/austinbourgerie
+# default
+MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
+# environment
+VSCODE_CODE_CACHE_PATH = /Users/austinbourgerie/Library/Application Support/Code/CachedData/30d9c6cd9483b2cc586687151bcbcd635f373630
+# environment
+LOGNAME = austinbourgerie
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# environment
+NVM_CD_FLAGS = -q
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+XPC_FLAGS = 0x0
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# environment
+SHLVL = 1
+# default
+MAKE_VERSION := 3.81
+# environment
+USER = austinbourgerie
+# makefile
+.DEFAULT_GOAL := all
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# default
+MAKE_COMMAND := /Library/Developer/CommandLineTools/usr/bin/make
+# default
+.VARIABLES := 
+# environment
+TMPDIR = /var/folders/84/5vgb6rtd14qdn2b_klkrc29c0000gn/T/
+# automatic
+*F = $(notdir $*)
+# environment
+VSCODE_IPC_HOOK = /Users/austinbourgerie/Library/Application Support/Code/1.68.1-main.sock
+# makefile
+MAKEFLAGS = Rrqp
+# environment
+MFLAGS = -Rrqp
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+NVM_DIR = /Users/austinbourgerie/.nvm
+# environment
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.11379779.11379786
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# makefile (from `Makefile', line 10)
+RGBFIX_FLAGS := -v -p 0xFF
+# automatic
++F = $(notdir $+)
+# environment
+__CF_USER_TEXT_ENCODING = 0x1F5:0x0:0x0
+# environment
+COMMAND_MODE = unix2003
+# default
+MAKEFILES := 
+# makefile (from `Makefile', line 1)
+SRC_DIR := src
+# automatic
+<F = $(notdir $<)
+# makefile (from `Makefile', line 3)
+ROM_DIR := roms
+# environment
+LC_ALL = C
+# automatic
+^F = $(notdir $^)
+# makefile (from `Makefile', line 5)
+SRC_FILES := src/hello-world-2.asm src/hello-world.asm
+# default
+SUFFIXES := 
+# default
+.INCLUDE_DIRS = /usr/local/include
+# makefile (from `Makefile', line 7)
+ROM_FILES := roms/hello-world-2.gb roms/hello-world.gb
+# environment
+MAKELEVEL := 0
+# environment
+LANG = C
+# environment
+VSCODE_PID = 18829
+# variable set hash-table stats:
+ 
+# Load=74/1024=7%, Rehash=0, Collisions=1/115=1%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 16777226, inode 11298833): 8 files, no impossibilities.
+# build (device 16777226, inode 11427961): 2 files, no impossibilities.
+# src (device 16777226, inode 11424595): 5 files, no impossibilities.
+
+# 15 files, no impossibilities in 3 directories.
+
+# Implicit Rules
+
+roms/%.gb: build/%.o | roms
+#  commands to execute (from `Makefile', line 15):
+	rgblink -o $@ $<
+	rgbfix $(RGBFIX_FLAGS) $@
+	
+
+build/%.o: src/%.asm src/hardware.inc | build
+#  commands to execute (from `Makefile', line 19):
+	cd $(SRC_DIR); rgbasm $(RGBASM_FLAGS) -o ../$@ ../$<
+	
+
+# 2 implicit rules, 0 (0.0%) terminal.
+
+# Files
+
+roms/hello-world-2.gb: build/hello-world-2.o | roms
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `hello-world-2'
+#  Last modified 2022-06-21 22:08:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 15):
+	rgblink -o $@ $<
+	rgbfix $(RGBFIX_FLAGS) $@
+	
+
+# Not a target:
+src/hello-world.asm:
+#  Implicit rule search has been done.
+#  Last modified 2022-06-21 21:31:23
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+src/hardware.inc:
+#  Implicit rule search has been done.
+#  Last modified 2022-06-21 21:23:37
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+build/hello-world.o: src/hello-world.asm src/hardware.inc | build
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `hello-world'
+#  File is an intermediate prerequisite.
+#  File does not exist.
+#  File has not been updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 19):
+	cd $(SRC_DIR); rgbasm $(RGBASM_FLAGS) -o ../$@ ../$<
+	
+
+all: roms/hello-world-2.gb roms/hello-world.gb
+#  Command-line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+src/hello-world-2.asm:
+#  Implicit rule search has been done.
+#  Last modified 2022-06-21 22:03:05
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2022-06-21 22:08:49
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+build:
+#  Implicit rule search has not been done.
+#  Last modified 2022-06-21 22:08:52
+#  File has been updated.
+#  Successfully updated.
+#  commands to execute (from `Makefile', line 22):
+	mkdir -p $(OBJ_DIR)
+	
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+build/hello-world-2.o: src/hello-world-2.asm src/hardware.inc | build
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `hello-world-2'
+#  File is an intermediate prerequisite.
+#  File does not exist.
+#  File has not been updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 19):
+	cd $(SRC_DIR); rgbasm $(RGBASM_FLAGS) -o ../$@ ../$<
+	
+
+clean:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `Makefile', line 28):
+	rm -rf $(OBJ_DIR) $(ROM_DIR)
+	
+
+roms/hello-world.gb: build/hello-world.o | roms
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `hello-world'
+#  Last modified 2022-06-21 22:08:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 15):
+	rgblink -o $@ $<
+	rgbfix $(RGBFIX_FLAGS) $@
+	
+
+roms:
+#  Implicit rule search has not been done.
+#  Last modified 2022-06-21 22:08:52
+#  File has been updated.
+#  Successfully updated.
+#  commands to execute (from `Makefile', line 25):
+	mkdir -p $(ROM_DIR)
+	
+
+# files hash-table stats:
+# Load=14/1024=1%, Rehash=0, Collisions=5/56=9%
+# VPATH Search Paths
+
+# No `vpath' search paths.
+
+# No general (`VPATH' variable) search path.
+
+# # of strings in strcache: 1
+# # of strcache buffers: 1
+# strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
+# strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
+
+# Finished Make data base on Wed Jun 22 18:27:24 2022
+
+ 

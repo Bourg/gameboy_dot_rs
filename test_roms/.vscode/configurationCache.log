@@ -1,0 +1,1 @@
+{"buildTargets":["all","build","build/hello-world-2.o","build/hello-world.o","clean","roms","roms/hello-world-2.gb","roms/hello-world.gb"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
