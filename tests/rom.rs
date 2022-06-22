@@ -8,7 +8,7 @@ use gameboy_dot_rs::cartridge::parse::Parse;
 #[test]
 fn test_pokemon_red_header() {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push("test_resources/rom/pokemon_red_header.gb");
+    d.push("test_roms/static/pokemon_red_header.gb");
 
     let mut file = fs::File::open(d).unwrap();
     let mut bytes = Vec::new();
