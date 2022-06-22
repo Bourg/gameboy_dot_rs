@@ -2,5 +2,6 @@
 Cargo.lock
 .idea
 *.iml
-roms/
-test_roms/build
+
+/roms/
+/test_roms/build
