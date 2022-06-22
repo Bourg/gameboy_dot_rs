@@ -1,11 +1,11 @@
 all: roms/hello-world.gb
 
-roms/hello-world.gb: build/hello-world.o roms
-	rgblink -o roms/hello-world.gb build/hello-world.o
-	rgbfix -v -p 0xFF roms/hello-world.gb
+roms/%.gb: build/%.o roms
+	rgblink -o $@ $<
+	rgbfix -v -p 0xFF $@
 
-build/hello-world.o: src/hello-world.asm src/hardware.inc build
-	cd src; rgbasm -L -o ../build/hello-world.o hello-world.asm
+build/%.o: src/%.asm src/hardware.inc build
+	cd src; rgbasm -L -o ../$@ ../$<
 
 build:
 	mkdir -p build
