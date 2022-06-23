@@ -49,6 +49,9 @@ impl Mbc1 {
 
     pub fn from_bytes(rom_bytes: &[u8]) -> ParseResult<Mbc1> {
         let header = Header::parse(&rom_bytes[HEADER_ADDRESS_RANGE])?;
+        let mut rom = Mbc1::create_rom(header.rom_banks);
+
+        rom.copy_from_slice(rom_bytes);
 
         // TODO reduce duplication with other constructor
         Ok(Mbc1 {
@@ -57,7 +60,7 @@ impl Mbc1 {
             bank_register_2: 0,
             mode_register: false,
 
-            rom: Mbc1::create_rom(header.rom_banks),
+            rom,
         })
     }
 

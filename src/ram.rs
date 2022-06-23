@@ -4,8 +4,8 @@ pub struct Ram<const N: usize> {
     ram: [u8; N],
 }
 
-impl<const N: usize> Ram<N> {
-    pub fn new() -> Ram<N> {
+impl<const N: usize> Default for Ram<N> {
+    fn default() -> Self {
         Ram { ram: [0; N] }
     }
 }

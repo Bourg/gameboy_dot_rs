@@ -24,11 +24,15 @@ impl Cpu {
         let instruction = self.read_byte_advance_pc(bus);
 
         match instruction {
-            0x3C => {
+            0xC3 => {
                 self.pc = self.read_word_advance_pc(bus);
                 4
-            },
-            _ => unimplemented!("unimplemented opcode {:#06X}", instruction)
+            }
+            _ => unimplemented!(
+                "unimplemented opcode {:#04X} at address {:#04X}",
+                instruction,
+                self.pc - 1
+            ),
         }
     }
 
@@ -44,6 +48,10 @@ impl Cpu {
 
         u16::from_le_bytes([least_significant_byte, most_significant_byte])
     }
+
+    pub fn pc(&self) -> u16 {
+        self.pc
+    }
 }
 
 impl Default for Cpu {
@@ -58,7 +66,7 @@ impl Default for Cpu {
             h: 0,
             l: 0,
 
-            pc: DEFAULT_PC
+            pc: DEFAULT_PC,
         }
     }
 }
