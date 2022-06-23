@@ -7,16 +7,11 @@ use gameboy_dot_rs::cartridge::mbc1::Mbc1;
 use gameboy_dot_rs::cartridge::parse::Parse;
 use gameboy_dot_rs::system::{Gas, System};
 
+mod common;
+
 #[test]
 fn test_jumps() {
-    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push("test_roms/roms/jumps.gb");
-
-    let mut file = fs::File::open(d).unwrap();
-    let mut bytes = Vec::new();
-    file.read_to_end(&mut bytes).unwrap();
-    let cartridge = Mbc1::from_bytes(&bytes).unwrap();
-    let mut system = System::load_cartridge(cartridge);
+    let mut system = common::load_test_system("test_roms/roms/jumps.gb");
 
     system.run_with_gas(Gas::LIMITED(10));
 

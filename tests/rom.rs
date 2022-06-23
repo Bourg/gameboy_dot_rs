@@ -5,16 +5,14 @@ use gameboy_dot_rs::cartridge::cartridge_type::CartridgeType;
 use gameboy_dot_rs::cartridge::header::{Checksum, Header, Validation};
 use gameboy_dot_rs::cartridge::parse::Parse;
 
+mod common;
+
 #[test]
 fn test_pokemon_red_header() {
-    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push("test_roms/static/pokemon_red_header.gb");
-
-    let mut file = fs::File::open(d).unwrap();
-    let mut bytes = Vec::new();
-    file.read_to_end(&mut bytes).unwrap();
+    let bytes = common::load_test_rom_bytes("test_roms/static/pokemon_red_header.gb");
 
     let header = Header::parse(&bytes[..]).unwrap();
+
     assert_eq!(Header {
         title: "POKEMON RED".to_string(),
         cartridge_type: CartridgeType::Mbc3 {
