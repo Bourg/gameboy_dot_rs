@@ -12,6 +12,15 @@ pub struct Bus {
     pub ram: Ram<0x2000>,
 }
 
+impl Bus {
+    pub fn new(cartridge: Mbc1) -> Self {
+        Bus {
+            cartridge,
+            ram: Ram::default(),
+        }
+    }
+}
+
 impl MemoryMapped for Bus {
     fn read_byte(&self, address: u16) -> u8 {
         match address {
