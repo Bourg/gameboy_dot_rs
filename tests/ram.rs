@@ -3,7 +3,7 @@ use gameboy_dot_rs::ram::Ram;
 
 #[test]
 fn test_ram_in_bounds() {
-    let mut ram: Ram<0x10> = Ram::new();
+    let mut ram: Ram<0x10> = Ram::default();
 
     assert_eq!(0, ram.read_byte(0x0));
     assert_eq!(0, ram.read_byte(0xA));

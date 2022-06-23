@@ -1,5 +1,8 @@
 /target
 Cargo.lock
 .idea
+.vscode
 *.iml
-roms/
+
+/roms/
+/test_roms/build
