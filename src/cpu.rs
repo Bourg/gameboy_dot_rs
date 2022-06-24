@@ -18,6 +18,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
+    // TODO need a deep dive on timing
     /// Performs one read->decode->execute cycle on the CPU
     /// Returns the number of machine cycles the instruction takes to execute
     pub fn read_decode_execute(&mut self, bus: &mut Bus) -> u8 {
@@ -55,6 +56,14 @@ impl Cpu {
             }
             0xC3 => {
                 self.pc = self.read_word_advance_pc(bus);
+                4
+            }
+            0xEA => {
+                bus.write_byte(self.read_word_advance_pc(bus), self.a);
+                4
+            }
+            0xFA => {
+                self.a = bus.read_byte(self.read_word_advance_pc(bus));
                 4
             }
             _ => unimplemented!(

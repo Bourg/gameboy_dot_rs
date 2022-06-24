@@ -1,3 +1,4 @@
+use gameboy_dot_rs::memory::MemoryMapped;
 use gameboy_dot_rs::system::Gas;
 
 mod common;
@@ -15,4 +16,15 @@ fn test_loads() {
     assert_eq!(0x5E, system.cpu().e);
     assert_eq!(0x6F, system.cpu().h);
     assert_eq!(0x7F, system.cpu().l);
+}
+
+#[test]
+fn test_load_memory() {
+    let mut system = common::load_test_system("test_roms/roms/load_memory.gb");
+
+    system.run_with_gas(Gas::LIMITED(20));
+
+    assert_eq!(123, system.bus().ram.read_byte(0));
+    assert_eq!(0, system.bus().ram.read_byte(1));
+    assert_eq!(123, system.cpu().a);
 }
