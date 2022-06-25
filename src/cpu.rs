@@ -24,15 +24,6 @@ impl Cpu {
     pub fn read_decode_execute(&mut self, bus: &mut Bus) -> u8 {
         let instruction = self.read_byte_advance_pc(bus);
 
-        macro_rules! get_register {
-            [bc] => {get_register!(b c)};
-            [de] => {get_register!(d e)};
-            [hl] => {get_register!(h l)};
-            ($a: ident $b: ident) => {
-                ((self.$a as u16) << 8) + (self.$b as u16)
-            };
-        }
-
         // Macro for implementing loads that are repetitive across multiple registers
         macro_rules! ld {
             ($a: ident immediate value) => {{
@@ -40,11 +31,11 @@ impl Cpu {
                 2
             }};
             ($a: ident, [hl]) => {{
-                self.$a = bus.read_byte(get_register![hl]);
+                self.$a = bus.read_byte(self.hl());
                 2
             }};
             ([hl], $a: ident) => {{
-                bus.write_byte(get_register![hl], self.$a);
+                bus.write_byte(self.hl(), self.$a);
                 2
             }};
             ($a: ident, $b: ident) => {{
@@ -55,29 +46,29 @@ impl Cpu {
 
         match instruction {
             0x02 => {
-                bus.write_byte(get_register![bc], self.a);
+                bus.write_byte(self.bc(), self.a);
                 2
             }
             0x06 => ld!(b immediate value),
             0x0A => {
-                self.a = bus.read_byte(get_register![bc]);
+                self.a = bus.read_byte(self.bc());
                 2
             }
             0x0E => ld!(c immediate value),
             0x12 => {
-                bus.write_byte(get_register![de], self.a);
+                bus.write_byte(self.de(), self.a);
                 2
             }
             0x16 => ld!(d immediate value),
             0x1A => {
-                self.a = bus.read_byte(get_register![de]);
+                self.a = bus.read_byte(self.de());
                 2
             }
             0x1E => ld!(e immediate value),
             0x26 => ld!(h immediate value),
             0x2E => ld!(l immediate value),
             0x36 => {
-                bus.write_byte(get_register![hl], self.read_byte_advance_pc(bus));
+                bus.write_byte(self.hl(), self.read_byte_advance_pc(bus));
                 3
             }
             0x3E => ld!(a immediate value),
@@ -148,9 +139,17 @@ impl Cpu {
                 self.pc = self.read_word_advance_pc(bus);
                 4
             }
+            0xE2 => {
+                bus.write_byte(self.c_as_high_ram_address(), self.a);
+                2
+            }
             0xEA => {
                 bus.write_byte(self.read_word_advance_pc(bus), self.a);
                 4
+            }
+            0xF2 => {
+                self.a = bus.read_byte(self.c_as_high_ram_address());
+                2
             }
             0xFA => {
                 self.a = bus.read_byte(self.read_word_advance_pc(bus));
@@ -176,6 +175,39 @@ impl Cpu {
 
         u16::from_le_bytes([least_significant_byte, most_significant_byte])
     }
+
+    fn bc(&self) -> u16 {
+        Cpu::compound_register(self.b, self.c)
+    }
+
+    fn de(&self) -> u16 {
+        Cpu::compound_register(self.d, self.e)
+    }
+
+    fn hl(&self) -> u16 {
+        Cpu::compound_register(self.h, self.l)
+    }
+
+    fn get_and_increment_hl(&mut self) -> u16 {
+        let hl = self.hl();
+
+        let (next_l, l_overflow) = self.l.overflowing_add(1);
+        if l_overflow {
+            self.h = self.h.wrapping_add(1);
+        }
+
+        self.l = next_l;
+
+        hl
+    }
+
+    fn compound_register(r1: u8, r2: u8) -> u16 {
+        ((r1 as u16) << 8) + (r2 as u16)
+    }
+
+    fn c_as_high_ram_address(&self) -> u16 {
+        0xFF00 + self.c as u16
+    }
 }
 
 impl Default for Cpu {
@@ -192,5 +224,35 @@ impl Default for Cpu {
 
             pc: DEFAULT_PC,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_and_increment_hl() {
+        let mut cpu = Cpu::default();
+
+        // Simplest case
+        assert_eq!(0x0000, cpu.get_and_increment_hl());
+        assert_eq!(0x0001, cpu.hl());
+
+        // Test rollover from l to h
+        cpu.h = 0xCE;
+        cpu.l = 0xFE;
+        assert_eq!(0xCEFE, cpu.get_and_increment_hl());
+        assert_eq!(0xCEFF, cpu.get_and_increment_hl());
+        assert_eq!(0xCF00, cpu.get_and_increment_hl());
+        assert_eq!(0xCF01, cpu.hl());
+
+        // Test full rollover
+        cpu.h = 0xFF;
+        cpu.l = 0xFE;
+        assert_eq!(0xFFFE, cpu.get_and_increment_hl());
+        assert_eq!(0xFFFF, cpu.get_and_increment_hl());
+        assert_eq!(0x0000, cpu.get_and_increment_hl());
+        assert_eq!(0x0001, cpu.get_and_increment_hl());
     }
 }
