@@ -24,233 +24,77 @@ impl Cpu {
     pub fn read_decode_execute(&mut self, bus: &mut Bus) -> u8 {
         let instruction = self.read_byte_advance_pc(bus);
 
-        match instruction {
-            // 00xxx110
-            0x06 => {
-                self.b = self.read_byte_advance_pc(bus);
+        macro_rules! ld_r_immediate {
+            ($a: ident) => {{
+                self.$a = self.read_byte_advance_pc(bus);
                 2
-            }
-            0x0E => {
-                self.c = self.read_byte_advance_pc(bus);
-                2
-            }
-            0x16 => {
-                self.d = self.read_byte_advance_pc(bus);
-                2
-            }
-            0x1E => {
-                self.e = self.read_byte_advance_pc(bus);
-                2
-            }
-            0x26 => {
-                self.h = self.read_byte_advance_pc(bus);
-                2
-            }
-            0x2E => {
-                self.l = self.read_byte_advance_pc(bus);
-                2
-            }
-            0x3E => {
-                self.a = self.read_byte_advance_pc(bus);
-                2
-            }
+            }};
+        }
 
-            0x40 => {
-                self.b = self.b;
+        macro_rules! ld_r_r {
+            ($a: ident, $b: ident) => {{
+                self.$a = self.$b;
                 1
-            }
-            0x41 => {
-                self.b = self.c;
-                1
-            }
-            0x42 => {
-                self.b = self.d;
-                1
-            }
-            0x43 => {
-                self.b = self.e;
-                1
-            }
-            0x44 => {
-                self.b = self.h;
-                1
-            }
-            0x45 => {
-                self.b = self.l;
-                1
-            }
-            0x47 => {
-                self.b = self.a;
-                1
-            }
-            0x48 => {
-                self.c = self.b;
-                1
-            }
-            0x49 => {
-                self.c = self.c;
-                1
-            }
-            0x4A => {
-                self.c = self.d;
-                1
-            }
-            0x4B => {
-                self.c = self.e;
-                1
-            }
-            0x4C => {
-                self.c = self.h;
-                1
-            }
-            0x4D => {
-                self.c = self.l;
-                1
-            }
-            0x4F => {
-                self.c = self.a;
-                1
-            }
-            0x50 => {
-                self.d = self.b;
-                1
-            }
-            0x51 => {
-                self.d = self.c;
-                1
-            }
-            0x52 => {
-                self.d = self.d;
-                1
-            }
-            0x53 => {
-                self.d = self.e;
-                1
-            }
-            0x54 => {
-                self.d = self.h;
-                1
-            }
-            0x55 => {
-                self.d = self.l;
-                1
-            }
-            0x57 => {
-                self.d = self.a;
-                1
-            }
-            0x58 => {
-                self.e = self.b;
-                1
-            }
-            0x59 => {
-                self.e = self.c;
-                1
-            }
-            0x5A => {
-                self.e = self.d;
-                1
-            }
-            0x5B => {
-                self.e = self.e;
-                1
-            }
-            0x5C => {
-                self.e = self.h;
-                1
-            }
-            0x5D => {
-                self.e = self.l;
-                1
-            }
-            0x5F => {
-                self.e = self.a;
-                1
-            }
-            0x60 => {
-                self.h = self.b;
-                1
-            }
-            0x61 => {
-                self.h = self.c;
-                1
-            }
-            0x62 => {
-                self.h = self.d;
-                1
-            }
-            0x63 => {
-                self.h = self.e;
-                1
-            }
-            0x64 => {
-                self.h = self.h;
-                1
-            }
-            0x65 => {
-                self.h = self.l;
-                1
-            }
-            0x67 => {
-                self.h = self.a;
-                1
-            }
-            0x68 => {
-                self.l = self.b;
-                1
-            }
-            0x69 => {
-                self.l = self.c;
-                1
-            }
-            0x6A => {
-                self.l = self.d;
-                1
-            }
-            0x6B => {
-                self.l = self.e;
-                1
-            }
-            0x6C => {
-                self.l = self.h;
-                1
-            }
-            0x6D => {
-                self.l = self.l;
-                1
-            }
-            0x6F => {
-                self.l = self.a;
-                1
-            }
-            0x78 => {
-                self.a = self.b;
-                1
-            }
-            0x79 => {
-                self.a = self.c;
-                1
-            }
-            0x7A => {
-                self.a = self.d;
-                1
-            }
-            0x7B => {
-                self.a = self.e;
-                1
-            }
-            0x7C => {
-                self.a = self.h;
-                1
-            }
-            0x7D => {
-                self.a = self.l;
-                1
-            }
-            0x7F => {
-                self.a = self.a;
-                1
-            }
+            }};
+        }
+
+        match instruction {
+            0x06 => ld_r_immediate!(b),
+            0x0E => ld_r_immediate!(c),
+            0x16 => ld_r_immediate!(d),
+            0x1E => ld_r_immediate!(e),
+            0x26 => ld_r_immediate!(h),
+            0x2E => ld_r_immediate!(l),
+            0x3E => ld_r_immediate!(a),
+            0x40 => ld_r_r!(b, b),
+            0x41 => ld_r_r!(b, c),
+            0x42 => ld_r_r!(b, d),
+            0x43 => ld_r_r!(b, e),
+            0x44 => ld_r_r!(b, h),
+            0x45 => ld_r_r!(b, l),
+            0x47 => ld_r_r!(b, a),
+            0x48 => ld_r_r!(c, b),
+            0x49 => ld_r_r!(c, c),
+            0x4A => ld_r_r!(c, d),
+            0x4B => ld_r_r!(c, e),
+            0x4C => ld_r_r!(c, h),
+            0x4D => ld_r_r!(c, l),
+            0x4F => ld_r_r!(c, a),
+            0x50 => ld_r_r!(d, b),
+            0x51 => ld_r_r!(d, c),
+            0x52 => ld_r_r!(d, d),
+            0x53 => ld_r_r!(d, e),
+            0x54 => ld_r_r!(d, h),
+            0x55 => ld_r_r!(d, l),
+            0x57 => ld_r_r!(d, a),
+            0x58 => ld_r_r!(e, b),
+            0x59 => ld_r_r!(e, c),
+            0x5A => ld_r_r!(e, d),
+            0x5B => ld_r_r!(e, e),
+            0x5C => ld_r_r!(e, h),
+            0x5D => ld_r_r!(e, l),
+            0x5F => ld_r_r!(e, a),
+            0x60 => ld_r_r!(h, b),
+            0x61 => ld_r_r!(h, c),
+            0x62 => ld_r_r!(h, d),
+            0x63 => ld_r_r!(h, e),
+            0x64 => ld_r_r!(h, h),
+            0x65 => ld_r_r!(h, l),
+            0x67 => ld_r_r!(h, a),
+            0x68 => ld_r_r!(l, b),
+            0x69 => ld_r_r!(l, c),
+            0x6A => ld_r_r!(l, d),
+            0x6B => ld_r_r!(l, e),
+            0x6C => ld_r_r!(l, h),
+            0x6D => ld_r_r!(l, l),
+            0x6F => ld_r_r!(l, a),
+            0x78 => ld_r_r!(a, b),
+            0x79 => ld_r_r!(a, c),
+            0x7A => ld_r_r!(a, d),
+            0x7B => ld_r_r!(a, e),
+            0x7C => ld_r_r!(a, h),
+            0x7D => ld_r_r!(a, l),
+            0x7F => ld_r_r!(a, a),
             0xC3 => {
                 self.pc = self.read_word_advance_pc(bus);
                 4
