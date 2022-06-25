@@ -27,4 +27,6 @@ fn test_load_memory() {
     assert_eq!(123, system.bus().ram.read_byte(0));
     assert_eq!(0, system.bus().ram.read_byte(1));
     assert_eq!(123, system.cpu().a);
+    assert_eq!(0, system.cpu().b);
+    assert_eq!(123, system.cpu().e);
 }

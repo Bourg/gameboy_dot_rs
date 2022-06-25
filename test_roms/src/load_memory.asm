@@ -11,6 +11,7 @@ Entrypoint:
     ld [_RAM], a
     ld a, $FF
     ld a, [_RAM]
+    ld e, a
 
 Loop:
 	jp Loop

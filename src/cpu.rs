@@ -54,6 +54,203 @@ impl Cpu {
                 self.a = self.read_byte_advance_pc(bus);
                 2
             }
+
+            0x40 => {
+                self.b = self.b;
+                1
+            }
+            0x41 => {
+                self.b = self.c;
+                1
+            }
+            0x42 => {
+                self.b = self.d;
+                1
+            }
+            0x43 => {
+                self.b = self.e;
+                1
+            }
+            0x44 => {
+                self.b = self.h;
+                1
+            }
+            0x45 => {
+                self.b = self.l;
+                1
+            }
+            0x47 => {
+                self.b = self.a;
+                1
+            }
+            0x48 => {
+                self.c = self.b;
+                1
+            }
+            0x49 => {
+                self.c = self.c;
+                1
+            }
+            0x4A => {
+                self.c = self.d;
+                1
+            }
+            0x4B => {
+                self.c = self.e;
+                1
+            }
+            0x4C => {
+                self.c = self.h;
+                1
+            }
+            0x4D => {
+                self.c = self.l;
+                1
+            }
+            0x4F => {
+                self.c = self.a;
+                1
+            }
+            0x50 => {
+                self.d = self.b;
+                1
+            }
+            0x51 => {
+                self.d = self.c;
+                1
+            }
+            0x52 => {
+                self.d = self.d;
+                1
+            }
+            0x53 => {
+                self.d = self.e;
+                1
+            }
+            0x54 => {
+                self.d = self.h;
+                1
+            }
+            0x55 => {
+                self.d = self.l;
+                1
+            }
+            0x57 => {
+                self.d = self.a;
+                1
+            }
+            0x58 => {
+                self.e = self.b;
+                1
+            }
+            0x59 => {
+                self.e = self.c;
+                1
+            }
+            0x5A => {
+                self.e = self.d;
+                1
+            }
+            0x5B => {
+                self.e = self.e;
+                1
+            }
+            0x5C => {
+                self.e = self.h;
+                1
+            }
+            0x5D => {
+                self.e = self.l;
+                1
+            }
+            0x5F => {
+                self.e = self.a;
+                1
+            }
+            0x60 => {
+                self.h = self.b;
+                1
+            }
+            0x61 => {
+                self.h = self.c;
+                1
+            }
+            0x62 => {
+                self.h = self.d;
+                1
+            }
+            0x63 => {
+                self.h = self.e;
+                1
+            }
+            0x64 => {
+                self.h = self.h;
+                1
+            }
+            0x65 => {
+                self.h = self.l;
+                1
+            }
+            0x67 => {
+                self.h = self.a;
+                1
+            }
+            0x68 => {
+                self.l = self.b;
+                1
+            }
+            0x69 => {
+                self.l = self.c;
+                1
+            }
+            0x6A => {
+                self.l = self.d;
+                1
+            }
+            0x6B => {
+                self.l = self.e;
+                1
+            }
+            0x6C => {
+                self.l = self.h;
+                1
+            }
+            0x6D => {
+                self.l = self.l;
+                1
+            }
+            0x6F => {
+                self.l = self.a;
+                1
+            }
+            0x78 => {
+                self.a = self.b;
+                1
+            }
+            0x79 => {
+                self.a = self.c;
+                1
+            }
+            0x7A => {
+                self.a = self.d;
+                1
+            }
+            0x7B => {
+                self.a = self.e;
+                1
+            }
+            0x7C => {
+                self.a = self.h;
+                1
+            }
+            0x7D => {
+                self.a = self.l;
+                1
+            }
+            0x7F => {
+                self.a = self.a;
+                1
+            }
             0xC3 => {
                 self.pc = self.read_word_advance_pc(bus);
                 4
