@@ -24,23 +24,27 @@ impl Cpu {
     pub fn read_decode_execute(&mut self, bus: &mut Bus) -> u8 {
         let instruction = self.read_byte_advance_pc(bus);
 
-        macro_rules! compound_register {
-            [$a: ident $b: ident] => {
+        macro_rules! get_register {
+            [bc] => {get_register!(b c)};
+            [de] => {get_register!(d e)};
+            [hl] => {get_register!(h l)};
+            ($a: ident $b: ident) => {
                 ((self.$a as u16) << 8) + (self.$b as u16)
             };
         }
 
+        // Macro for implementing loads that are repetitive across multiple registers
         macro_rules! ld {
-            ($a: ident immediate) => {{
+            ($a: ident immediate value) => {{
                 self.$a = self.read_byte_advance_pc(bus);
                 2
             }};
             ($a: ident, [hl]) => {{
-                self.$a = bus.read_byte(compound_register![h l]);
+                self.$a = bus.read_byte(get_register![hl]);
                 2
             }};
             ([hl], $a: ident) => {{
-                bus.write_byte(compound_register![h l], self.$a);
+                bus.write_byte(get_register![hl], self.$a);
                 2
             }};
             ($a: ident, $b: ident) => {{
@@ -50,13 +54,33 @@ impl Cpu {
         }
 
         match instruction {
-            0x06 => ld!(b immediate),
-            0x0E => ld!(c immediate),
-            0x16 => ld!(d immediate),
-            0x1E => ld!(e immediate),
-            0x26 => ld!(h immediate),
-            0x2E => ld!(l immediate),
-            0x3E => ld!(a immediate),
+            0x02 => {
+                bus.write_byte(get_register![bc], self.a);
+                2
+            }
+            0x06 => ld!(b immediate value),
+            0x0A => {
+                self.a = bus.read_byte(get_register![bc]);
+                2
+            }
+            0x0E => ld!(c immediate value),
+            0x12 => {
+                bus.write_byte(get_register![de], self.a);
+                2
+            }
+            0x16 => ld!(d immediate value),
+            0x1A => {
+                self.a = bus.read_byte(get_register![de]);
+                2
+            }
+            0x1E => ld!(e immediate value),
+            0x26 => ld!(h immediate value),
+            0x2E => ld!(l immediate value),
+            0x36 => {
+                bus.write_byte(get_register![hl], self.read_byte_advance_pc(bus));
+                3
+            }
+            0x3E => ld!(a immediate value),
             0x40 => ld!(b, b),
             0x41 => ld!(b, c),
             0x42 => ld!(b, d),
