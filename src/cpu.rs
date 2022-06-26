@@ -45,6 +45,7 @@ impl Cpu {
         }
 
         match instruction {
+            0x00 => 1,
             0x02 => {
                 bus.write_byte(self.bc(), self.a);
                 2
@@ -65,11 +66,27 @@ impl Cpu {
                 2
             }
             0x1E => ld!(e immediate value),
+            0x22 => {
+                bus.write_byte(self.get_and_increment_hl(), self.a);
+                2
+            }
             0x26 => ld!(h immediate value),
+            0x2A => {
+                self.a = bus.read_byte(self.get_and_increment_hl());
+                2
+            }
             0x2E => ld!(l immediate value),
+            0x32 => {
+                bus.write_byte(self.get_and_decrement_hl(), self.a);
+                2
+            }
             0x36 => {
                 bus.write_byte(self.hl(), self.read_byte_advance_pc(bus));
                 3
+            }
+            0x3A => {
+                self.a = bus.read_byte(self.get_and_decrement_hl());
+                2
             }
             0x3E => ld!(a immediate value),
             0x40 => ld!(b, b),
@@ -139,6 +156,13 @@ impl Cpu {
                 self.pc = self.read_word_advance_pc(bus);
                 4
             }
+            0xE0 => {
+                bus.write_byte(
+                    Cpu::u8_to_high_ram_address(self.read_byte_advance_pc(bus)),
+                    self.a,
+                );
+                3
+            }
             0xE2 => {
                 bus.write_byte(self.c_as_high_ram_address(), self.a);
                 2
@@ -146,6 +170,10 @@ impl Cpu {
             0xEA => {
                 bus.write_byte(self.read_word_advance_pc(bus), self.a);
                 4
+            }
+            0xF0 => {
+                self.a = bus.read_byte(Cpu::u8_to_high_ram_address(self.read_byte_advance_pc(bus)));
+                3
             }
             0xF2 => {
                 self.a = bus.read_byte(self.c_as_high_ram_address());
@@ -188,6 +216,23 @@ impl Cpu {
         Cpu::compound_register(self.h, self.l)
     }
 
+    fn set_hl(&mut self, hl: u16) {
+        self.h = (hl >> 8) as u8;
+        self.l = hl as u8;
+    }
+
+    fn get_and_decrement_hl(&mut self) -> u16 {
+        let hl = self.hl();
+
+        let (next_l, l_overflow) = self.l.overflowing_sub(1);
+        if l_overflow {
+            self.h = self.h.wrapping_sub(1);
+        }
+        self.l = next_l;
+
+        hl
+    }
+
     fn get_and_increment_hl(&mut self) -> u16 {
         let hl = self.hl();
 
@@ -205,8 +250,12 @@ impl Cpu {
         ((r1 as u16) << 8) + (r2 as u16)
     }
 
+    fn u8_to_high_ram_address(v: u8) -> u16 {
+        0xFF00 + v as u16
+    }
+
     fn c_as_high_ram_address(&self) -> u16 {
-        0xFF00 + self.c as u16
+        Cpu::u8_to_high_ram_address(self.c)
     }
 }
 
@@ -230,6 +279,31 @@ impl Default for Cpu {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_u8_as_high_ram_address() {
+        assert_eq!(0xFF00, Cpu::u8_to_high_ram_address(0x00));
+        assert_eq!(0xFFFF, Cpu::u8_to_high_ram_address(0xFF));
+        assert_eq!(0xFF9A, Cpu::u8_to_high_ram_address(0x9A));
+    }
+
+    #[test]
+    fn test_get_and_decrement_hl() {
+        let mut cpu = Cpu::default();
+
+        cpu.set_hl(0x3201);
+
+        assert_eq!(0x3201, cpu.get_and_decrement_hl());
+        assert_eq!(0x3200, cpu.get_and_decrement_hl());
+        assert_eq!(0x31FF, cpu.get_and_decrement_hl());
+        assert_eq!(0x31FE, cpu.hl());
+
+        cpu.set_hl(0);
+
+        assert_eq!(0, cpu.get_and_decrement_hl());
+        assert_eq!(0xFFFF, cpu.get_and_decrement_hl());
+        assert_eq!(0xFFFE, cpu.hl());
+    }
 
     #[test]
     fn test_get_and_increment_hl() {
